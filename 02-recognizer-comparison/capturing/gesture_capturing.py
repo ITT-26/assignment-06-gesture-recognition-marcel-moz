@@ -1,16 +1,16 @@
-# gesture input program for first task
+
 import pyglet
-from dollar_recognizer import DollarRegcognizer
 from pyglet import window
 from pyglet import shapes
 from pyglet.window import mouse
 from geometry import Point
+import xml.etree.ElementTree as ET
+import time
+from pathlib import Path
 
 
 class GestureInput:
     def __init__(self, x, y, size, window, batch=pyglet.graphics.Batch()):
-        self.recognizer = DollarRegcognizer(size)
-        self.recognizer.add_assignment_gestures()
         self.batch = batch
         self.field = shapes.Rectangle(
             x, y, size, size, color=(200, 200, 200), batch=batch)
@@ -21,12 +21,19 @@ class GestureInput:
         self.drawn_points = []
         self.rec_points = []
         self.line_width = size // 75
-        self.predicted_gesture = "No result"
+        self.times = []
+        self.gesture_start_time = time.time()
+        self.gestures = ['circle', 'check',
+                         'pigtail', 'delete_mark', 'rectangle']
+        # in the xml logs delete_mark is used instead of delete (this differs from the assignment sheet)
+        self.acitive_gesture = self.gestures.pop(0)
+        self.gesture_counter = 1
+        print(self.acitive_gesture)
 
     def convert_to_field_coordinates(self, x, y):
         x -= self.field.x
         y -= self.field.y
-        x = - x  # flip x coordinate
+        y = -y
         return x, y
 
     def check_field_hit(self, x, y):
@@ -40,13 +47,16 @@ class GestureInput:
         return False
 
     def handle_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-
         if self.check_field_hit(x, y):
             if buttons & mouse.LEFT:
                 self.drawn_points.append(shapes.Circle(
                     x, y, radius=self.line_width, color=(255, 0, 0), batch=self.batch))
                 local_x, local_y = self.convert_to_field_coordinates(x, y)
                 self.rec_points.append(Point(local_x, local_y))
+
+                # time since starting gesture in ms
+                self.times.append(
+                    int((time.time() - self.gesture_start_time) * 1000))
 
     def handle_mouse_press(self, x, y, button, modifiers):
 
@@ -62,16 +72,55 @@ class GestureInput:
                 local_x, local_y = self.convert_to_field_coordinates(x, y)
                 self.rec_points.append(Point(local_x, local_y))
 
+    def save_gesture_to_xml(self):
+        dir = Path("./marcel_logs/s01/")
+        dir.mkdir(parents=True, exist_ok=True)
+
+        root = ET.Element("Gesture")
+        str_number = f"{self.gesture_counter:02}"
+        name = self.acitive_gesture + str_number
+        root.set("Name", name)
+        root.set("Subject", "0")
+        root.set("Number", str(self.gesture_counter))
+        root.set("NumPts", str(len(self.rec_points)))
+        duration = self.times[len(self.times)-1] - self.times[0]
+        root.set("Millseconds", str(duration))  # sic
+
+        for point, t in zip(self.rec_points, self.times):
+            point_element = ET.SubElement(root, "Point")
+            point_element.set("X", str(point.x))
+            point_element.set("Y", str(point.y))
+            point_element.set("T", str(t))
+
+        tree = ET.ElementTree(root)
+        tree.write(str(dir) + "/" + name + ".xml", encoding="utf-8",
+                   xml_declaration=True)
+
+        self.times.clear()
+        self.rec_points.clear()
+
+        FILES_PER_GESTURE = 10
+
+        if self.gesture_counter < FILES_PER_GESTURE:
+            self.gesture_counter += 1
+            print(self.acitive_gesture)
+            print(self.gesture_counter)
+        else:
+            self.gesture_counter = 1
+            if len(self.gestures) >= 1:
+                self.acitive_gesture = self.gestures.pop(0)
+                print(self.acitive_gesture)
+                print(self.gesture_counter)
+                self.gesture_start_time = time.time()
+            else:
+                print("finished")
+                pyglet.app.exit()
+
     def handle_mouse_release(self, x, y, button, modifiers):
+
         if button == mouse.LEFT:
             if len(self.rec_points) > 1:
-                result = self.recognizer.recognize(self.rec_points)
-                print(
-                    f"Result: {result.name} ({result.score}) in {result.time} s")
-
-                self.predicted_gesture = result.name
-            else:
-                print("No prediction possible. More points needed")
+                self.save_gesture_to_xml()
 
 
 WINDOW_SIZE = 600
@@ -79,32 +128,10 @@ win = window.Window(WINDOW_SIZE, WINDOW_SIZE, "Gesture Input")
 batch = pyglet.graphics.Batch()
 gesture_input = GestureInput(50, 50, WINDOW_SIZE-100, window=win, batch=batch)
 
-heading_text = pyglet.text.Label(
-    'Draw a gesture in the gray area:',
-    font_size=20,
-    x=5,
-    y=win.height-5,
-    anchor_x='left',
-    anchor_y='top',
-    batch=batch,
-    color=(255, 255, 255),
-)
-result_text = pyglet.text.Label(
-    'prediction: ' + gesture_input.predicted_gesture,
-    font_size=20,
-    x=5,
-    y=5,
-    anchor_x='left',
-    anchor_y='bottom',
-    batch=batch,
-    color=(255, 255, 255),
-)
-
 
 @win.event
 def on_draw():
     win.clear()
-    result_text.text = 'prediction: ' + gesture_input.predicted_gesture
     gesture_input.batch.draw()
 
 
