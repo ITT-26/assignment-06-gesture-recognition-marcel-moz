@@ -12,6 +12,7 @@ class Recognizer:
         self.NUM_POINTS = 64
         self.model = keras.models.load_model("gesture_recognizer.keras")
         self.scaler = StandardScaler()
+        self.proba_threshhold = 0.9
 
     def preprocess_data(self, points):
         points = np.array(points, dtype=float)
@@ -25,7 +26,12 @@ class Recognizer:
         resampled = resample(scaled, self.NUM_POINTS)
         resampled = np.expand_dims(resampled, axis=0) #add dimension
         prediction = self.model.predict(resampled, verbose=0)
+        # print(np.max(prediction))
+        if np.max(prediction) < self.proba_threshhold:
+            return None
+        
         index = np.argmax(prediction[0])
+        
         self.predicted_gesture = self.gestures[index]
         # print("Predicted gesture: ", self.predicted_gesture)
         return self.predicted_gesture

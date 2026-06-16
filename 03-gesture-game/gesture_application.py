@@ -7,32 +7,66 @@ import math
 import keras
 from pyglet.window import mouse
 import random
+from pyglet import image, sprite
 
 
 class RockPaperScissorsGame:
-    def __init__(self):
+    def __init__(self, batch):
         self.player_action = "no action"
         self.computer_action = "no action"
         self.game_result = "not played"
 
+        rock_path = '.\\images\\rock.png'
+        paper_path = '.\\images\\paper.png'
+        scissors_path = '.\\images\\scissors.png'
+
+        self.rock_image = image.load(rock_path)
+        self.paper_image = image.load(paper_path)
+        self.scissors_image = image.load(scissors_path)
+        self.batch = batch
+
+        self.sprites = []
+
+    def clear_action_sprites(self):
+        for sprite in self.sprites:
+            sprite.delete()
+        self.sprites.clear()
+
     def set_player_action(self, gesture):
+        player_x = 650
+        player_y = 300
         if gesture is None:
-            self.player_action = None
+            self.player_action = "no gesture detected. you lose."
         elif gesture == "rectangle":
             self.player_action = "paper"
+            self.sprites.append(sprite.Sprite(self.paper_image,
+                                x=player_x, y=player_y, batch=self.batch))
+
         elif gesture == "circle":
             self.player_action = "rock"
+            self.sprites.append(sprite.Sprite(self.rock_image,
+                                x=player_x, y=player_y, batch=self.batch))
         elif gesture == "delete_mark":
+            self.sprites.append(sprite.Sprite(self.scissors_image,
+                                x=player_x, y=player_y, batch=self.batch))
             self.player_action = "scissors"
 
     def set_computer_action(self):
+        computer_x = 1000
+        computer_y = 300
         random_selection = random.random() * 3
         if random_selection <= 1:
             self.computer_action = "paper"
+            self.sprites.append(sprite.Sprite(self.paper_image,
+                                x=computer_x, y=computer_y, batch=self.batch))
         elif random_selection <= 2:
             self.computer_action = "rock"
+            self.sprites.append(sprite.Sprite(self.rock_image,
+                                x=computer_x, y=computer_y, batch=self.batch))
         else:
             self.computer_action = "scissors"
+            self.sprites.append(sprite.Sprite(
+                self.scissors_image, x=computer_x, y=computer_y, batch=self.batch))
 
     def calculate_game_result(self):
         if self.player_action is None or self.computer_action is None:
@@ -67,7 +101,7 @@ class GestureInput:
     def convert_to_field_coordinates(self, x, y):
         x -= self.field.x
         y -= self.field.y
-        y = -y # transform recog space
+        y = -y  # transform recog space
         return x, y
 
     def check_field_hit(self, x, y):
@@ -106,16 +140,18 @@ class GestureInput:
     def on_finished_drawing(self):
         prediction = recognizer.recognize(self.rec_points)
         self.predicted_gesture = prediction
+        game.clear_action_sprites()
         game.set_player_action(self.predicted_gesture)
         game.set_computer_action()
         game.calculate_game_result()
 
     def handle_mouse_release(self, x, y, button, modifiers):
-        if button == mouse.LEFT:
-            if len(self.rec_points) > 1:
-                self.on_finished_drawing()
-            else:
-                print("No prediction possible. More points needed")
+        if self.check_field_hit(x, y):
+            if button == mouse.LEFT:
+                if len(self.rec_points) > 1:
+                    self.on_finished_drawing()
+                else:
+                    print("No prediction possible. More points needed")
 
 
 WINDOW_WIDTH = 1600
@@ -123,7 +159,7 @@ WINDOW_HEIGHT = 1200
 
 win = window.Window(WINDOW_WIDTH, WINDOW_HEIGHT, "Gesture Input")
 batch = pyglet.graphics.Batch()
-game = RockPaperScissorsGame()
+game = RockPaperScissorsGame(batch=batch)
 recognizer = Recognizer()
 
 gesture_input = GestureInput(

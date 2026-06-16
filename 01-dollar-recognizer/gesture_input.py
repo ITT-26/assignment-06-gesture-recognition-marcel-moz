@@ -63,15 +63,16 @@ class GestureInput:
                 self.rec_points.append(Point(local_x, local_y))
 
     def handle_mouse_release(self, x, y, button, modifiers):
-        if button == mouse.LEFT:
-            if len(self.rec_points) > 1:
-                result = self.recognizer.recognize(self.rec_points)
-                print(
-                    f"Result: {result.name} ({result.score}) in {result.time} s")
+        if self.check_field_hit(x, y):
+            if button == mouse.LEFT:
+                if len(self.rec_points) > 1:
+                    result = self.recognizer.recognize(self.rec_points)
+                    print(
+                        f"Result: {result.name} ({result.score}) in {result.time} s")
 
-                self.predicted_gesture = result.name
-            else:
-                print("No prediction possible. More points needed")
+                    self.predicted_gesture = result.name
+                else:
+                    print("No prediction possible. More points needed")
 
 
 WINDOW_SIZE = 600
