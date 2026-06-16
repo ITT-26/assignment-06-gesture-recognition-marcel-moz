@@ -23,8 +23,10 @@ class GestureInput:
         self.line_width = size // 75
         self.times = []
         self.gesture_start_time = time.time()
-        self.gestures = ['circle', 'check',
-                         'pigtail', 'delete_mark', 'rectangle']
+        self.gestures = ["arrow", "caret", "check", "circle", "delete_mark", "left_curly_brace",
+                         "left_sq_bracket", "pigtail", "rectangle",
+                         "right_curly_brace", "right_sq_bracket", "star", "triangle", "v", "x"]
+        # exlclude question mark because its not on dollar recognizer website, also exclude zigziag from website bc not in logs
         # in the xml logs delete_mark is used instead of delete (this differs from the assignment sheet)
         self.acitive_gesture = self.gestures.pop(0)
         self.gesture_counter = 1
@@ -73,7 +75,7 @@ class GestureInput:
                 self.rec_points.append(Point(local_x, local_y))
 
     def save_gesture_to_xml(self):
-        dir = Path("./marcel_logs/s01/")
+        dir = Path("./datasets/")
         dir.mkdir(parents=True, exist_ok=True)
 
         root = ET.Element("Gesture")
