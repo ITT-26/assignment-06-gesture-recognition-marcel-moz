@@ -1,6 +1,6 @@
 # gesture input program for first task
 import pyglet
-from dollar_recognizer import DollarRegcognizer
+from recognizer import DollarRegcognizer
 from pyglet import window
 from pyglet import shapes
 from pyglet.window import mouse
