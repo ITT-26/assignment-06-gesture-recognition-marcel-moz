@@ -11,6 +11,11 @@
 - For running the code for task 1 you need to run the [`gesture_input.py`](./01-dollar-recognizer/gesture_input.py) file via `python gesture_input.py`
 # Task 2 Comparing Gesture Recognizers
 - The files for task 2 are in [`./02-dataset/`](./02-dataset/).
+- For capturing the gesture data I used [`gesture_capturing.py`](./02-recognizer-comparison/capturing/gesture_capturing.py) located in [`/capturing/`](./02-recognizer-comparison/capturing/).
+- The captured data can be found in [`/datasets/`](./02-recognizer-comparison/datasets/).
+- The camparison of recognizers was done in [`unistroke_gestures.ipynb`](./02-recognizer-comparison/unistroke-gestures.ipynb). The method and results are also documented there.
+- Created plots can be found in [`/plots/`](./02-recognizer-comparison/plots/).
+
 # Task 3 Gesture Detection Game
 - The files for task 3 are in [`./03-gesture-game/`](./03-gesture-game/).
 - The rock, paper ,scissors game needs to be started via running the [`gesture_application.py`](./03-gesture-game/gesture_application.py) file e. g. `python .\gesture_application.py`.
