@@ -13,7 +13,7 @@
 - The files for task 2 are in [`./02-dataset/`](./02-dataset/).
 - For capturing the gesture data I used [`gesture_capturing.py`](./02-recognizer-comparison/capturing/gesture_capturing.py) located in [`/capturing/`](./02-recognizer-comparison/capturing/).
 - The captured data can be found in [`/datasets/`](./02-recognizer-comparison/datasets/).
-- The camparison of recognizers was done in [`unistroke_gestures.ipynb`](./02-recognizer-comparison/unistroke-gestures.ipynb). The method and results are also documented there.
+- The comparison of recognizers was done in [`unistroke_gestures.ipynb`](./02-recognizer-comparison/unistroke-gestures.ipynb). The method and results are also documented there. The notebook needs the XML-gesture logs from the $1-recognizer. They need to be in the same directory and the name has to be `xml_logs`. 
 - Created plots can be found in [`/plots/`](./02-recognizer-comparison/plots/).
 
 # Task 3 Gesture Detection Game
